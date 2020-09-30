@@ -178,14 +178,17 @@ def main(start, end, confidence, threshold):
             print(f"{t1 - t0} seconds to download {len(urls)} urls for {ticker}.")
             history_concat = pd.concat(history)
             history_concat = history_concat[~history_concat.Open.str.contains("Dividend")]
-            assessment = bootstrap_risk_assessment(history_concat, con, [ticker, start_date, end_date])
+            assessment = bootstrap_risk_assessment(history_concat, confidence, [ticker, start_date, end_date])
             if assessment >= threshold:
                 print(f"{ticker}: {assessment}")
-                bootstrap_risk_assessment(stock, confidence, [ticker, start, end], plot=True)
                 green_light.append((f"{ticker}", assessment))
         except KeyError:
             print('Fatal Error: Site Down')
-            break
+            continue
+        except TypeError:
+            continue
+        except IndexError:
+            continue
     green_light.sort(key=lambda x: x[1])
     return green_light
 
@@ -196,6 +199,6 @@ if __name__ == '__main__':
     start_time = time.time()
     green_stocks = main(start_date, end_date, con, thresh)
     end_time = time.time()
-    print(f"Gathered {len(green_stocks)} good stocks in {start_time - end_time}s")
+    print(f"Gathered {len(green_stocks)} good stocks in {end_time-start_time}s")
     for i in green_stocks:
         print(i)
